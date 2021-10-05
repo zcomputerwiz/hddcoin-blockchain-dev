@@ -1,4 +1,20 @@
 #!/bin/bash
+
+# Check current HDDcoin SSL version to prevent update on old SSL
+if [ -e ../.hddcoin/mainnet/config/ssl/ca/hddcoin_ca.crt ]; then
+	HDDCOIN_SSL_SERIAL=$(openssl x509 -noout -in ../.hddcoin/mainnet/config/ssl/ca/hddcoin_ca.crt -serial)
+	if [ $HDDCOIN_SSL_SERIAL = "serial=5C8A71239328650EB9FEF85CEC32BF779CA6A0C5" ]; then 
+		echo ""
+		echo "WARNING:"
+		echo "Old version of HDDcoin Blockchain SSL has been detected."
+		echo "Please visit https://hddcoin.org/sslupdate/ for further instructions."
+		echo ""
+		echo "Exiting installer..."
+		echo ""
+		exit 1
+	fi
+fi
+
 set -e
 UBUNTU=false
 DEBIAN=false
@@ -119,10 +135,44 @@ python -m pip install wheel
 python -m pip install --extra-index-url https://pypi.chia.net/simple/ miniupnpc==2.2.2
 python -m pip install -e . --extra-index-url https://pypi.chia.net/simple/
 
-echo ""
+echo "
+       ##############################################   
+     ################################################## 
+    ####    ####################################    ####
+    ####    #########                  #########    ####
+    #############        ##########        #############
+    ##########      ####################     ###########
+    ########     ##########################    #########
+    #######    ##############################    #######
+    #####    ##################################   ######
+    ####    ####################################   #####
+    ####   ###############        ###############   ####
+    ###   ##############            #############    ###
+    ###   #############     ####     #############   ###
+    ###   ############     ######     ############   ###
+    ###   #############    ######    #############   ###
+    ###   #############     ####     ############    ###
+    ####   ########  ####          ##############   ####
+    #####   ########      ######################   #####
+    ######   #########         ################   ######
+    #######    ########             #########    #######
+    ########     ########    ##        ####    #########
+    ###########     #######    #####         ###########
+    ##############         #     #####      ############
+    ##################             ######     ##########
+    #############################     ######     #######
+    ###############################      ##    #########
+    ##################################        ##########
+    ####    #############################   ####    ####
+    ####    ####################################    ####
+     ################################################## 
+       ##############################################         
+    "
+
 echo "HDDcoin blockchain install.sh complete."
-echo "For assistance join us on Keybase in the #support chat channel:"
-echo "https://keybase.io/team/hddcoin_network.public"
+echo ""
+echo "Visit our Website to learn more about HDDcoin:"
+echo "https://hddcoin.org"
 echo ""
 echo "Try the Quick Start Guide to running hddcoin-blockchain:"
 echo "https://github.com/HDDcoin-Network/hddcoin-blockchain/wiki/Quick-Start-Guide"

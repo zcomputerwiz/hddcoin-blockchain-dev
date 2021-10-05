@@ -32,8 +32,6 @@ network_overrides: &network_overrides
     mainnet:
       address_prefix: "hdd"
       default_full_node_port: 28444
-    testnet0:
-      address_prefix: "thdd"
     testnet1:
       address_prefix: "thdd"
       default_full_node_port: 38444

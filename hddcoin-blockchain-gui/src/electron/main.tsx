@@ -353,15 +353,7 @@ if (!handleSquirrelEvent()) {
       {
         label: i18n._(/* i18n */ { id: 'Help' }),
         role: 'help',
-        submenu: [		
-		  {
-            label: i18n._(/* i18n */ { id: 'Visit HDDcoin Website' }),
-            click: () => {
-              openExternal(
-                'https://hddcoin.org',
-              );
-            },
-          },		
+        submenu: [
           {
             label: i18n._(/* i18n */ { id: 'HDDcoin Blockchain Wiki' }),
             click: () => {
@@ -394,9 +386,9 @@ if (!handleSquirrelEvent()) {
               );
             },
           },
-          {
-            type: 'separator',
-          },
+          //{
+           // type: 'separator',
+          //},
           {
             label: i18n._(/* i18n */ { id: 'Report an Issue...' }),
             click: () => {
@@ -408,13 +400,66 @@ if (!handleSquirrelEvent()) {
           //{
             //label: i18n._(/* i18n */ { id: 'Chat on KeyBase' }),
             //click: () => {
-              //openExternal('https://keybase.io/team/hddcoin_network.public');
+              //openExternal('https://keybase.io/team/chia_network.public');
             //},
           //},
-          {
-            label: i18n._(/* i18n */ { id: 'Follow on Twitter' }),
+		  {
+            type: 'separator',
+          },
+		  {
+            label: i18n._(/* i18n */ { id: 'Visit HDDcoin Website' }),
             click: () => {
-              openExternal('https://twitter.com/hddcoin');
+              openExternal(
+                'https://hddcoin.org',
+              );
+            },
+          },
+		  {
+            label: i18n._(/* i18n */ { id: 'Join our Discord Server' }),
+            click: () => {
+              openExternal(
+                'https://discord.gg/AZdGSFnqAR',
+              );
+            },
+          },	
+          {
+            label: i18n._(/* i18n */ { id: 'Follow us on Twitter' }),
+            click: () => {
+              openExternal(
+                'https://twitter.com/hddcoin',
+              );
+            },
+          },	
+          {
+            label: i18n._(/* i18n */ { id: 'Visit our YouTube Channel' }),
+            click: () => {
+              openExternal(
+                'https://www.youtube.com/channel/UChJY3YEOTDBvFJ0vLFEc1Sw',
+              );
+            },
+          },	
+          {
+            label: i18n._(/* i18n */ { id: 'Connect with us on Facebook' }),
+            click: () => {
+              openExternal(
+                'https://www.facebook.com/HDDcoinNetwork',
+              );
+            },
+          },	
+          {
+            label: i18n._(/* i18n */ { id: 'Join our group on Telegram' }),
+            click: () => {
+              openExternal(
+                'https://t.me/HDDcoin_Network',
+              );
+            },
+          },	
+          {
+            label: i18n._(/* i18n */ { id: 'Join our Reddit Community' }),
+            click: () => {
+              openExternal(
+                'https://www.reddit.com/r/HDDcoinNetwork',
+              );
             },
           },
         ],
