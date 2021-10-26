@@ -64,6 +64,7 @@ export default function AppRouter() {
   if (!daemonConnected) {
     return (
       <LayoutLoading>
+        <Trans>Welcome to HDDcoin! Now performing start-up checks. Please wait...</Trans>
         <Trans>Performing start-up checks ...</Trans>
       </LayoutLoading>
     );
@@ -71,14 +72,14 @@ export default function AppRouter() {
   if (!sslCheck) {
     return (
       <LayoutLoading>
-        <Trans>SSL check failed ! ...</Trans>
+        <Trans>SSL check failed!</Trans>
       </LayoutLoading>
     );
   }
   if (!walletConnected) {
     return (
       <LayoutLoading>
-        <Trans>Connecting to wallet</Trans>
+        <Trans>Welcome to HDDcoin! Connecting to wallet</Trans>
       </LayoutLoading>
     );
   }
