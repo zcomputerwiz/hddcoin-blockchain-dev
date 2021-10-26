@@ -18,6 +18,9 @@ export default function AppRouter() {
   const loggedInReceived = useSelector(
     (state: RootState) => state.wallet_state.logged_in_received,
   );
+  const sslCheck = useSelector(
+    (state: RootState) => state.daemon_state.ssl_check,
+  );
   const daemonConnected = useSelector(
     (state: RootState) => state.daemon_state.daemon_connected,
   );
@@ -62,6 +65,14 @@ export default function AppRouter() {
     return (
       <LayoutLoading>
         <Trans>Welcome to HDDcoin! Now performing start-up checks. Please wait...</Trans>
+        <Trans>Performing start-up checks ...</Trans>
+      </LayoutLoading>
+    );
+  }
+  if (!sslCheck) {
+    return (
+      <LayoutLoading>
+        <Trans>SSL check failed!</Trans>
       </LayoutLoading>
     );
   }
