@@ -65,7 +65,6 @@ export default function AppRouter() {
     return (
       <LayoutLoading>
         <Trans>Welcome to HDDcoin! Now performing start-up checks. Please wait...</Trans>
-        <Trans>Performing start-up checks ...</Trans>
       </LayoutLoading>
     );
   }
