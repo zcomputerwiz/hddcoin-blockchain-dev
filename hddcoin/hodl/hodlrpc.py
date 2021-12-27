@@ -6,13 +6,17 @@ from __future__ import annotations
 import asyncio
 import http
 import os
+import platform
+import ssl
 import time
 import typing as th
 
 import aiohttp
 import blspy   #type:ignore
 
+import hddcoin
 import hddcoin.hodl.exc as exc
+from hddcoin.ssl.create_ssl import get_mozilla_ca_crt  #type:ignore
 from hddcoin.util.clvm import int_to_bytes
 
 
@@ -26,6 +30,9 @@ DEFAULT_TIMEOUT = aiohttp.ClientTimeout(total = 1000 if "WINGDB_ACTIVE" in os.en
 HTTP_GET = "get"
 HTTP_POST = "post"
 
+CLIENT_OS = platform.system()
+CLIENT_APPVER = hddcoin.__version__
+
 
 class HodlRpcClient:
     _fingerprint: int
@@ -33,6 +40,7 @@ class HodlRpcClient:
     sk: blspy.PrivateKey
     _session: aiohttp.ClientSession
     _closing_task: th.Optional[asyncio.Task]  # emulating hddcoin.rpc.rpc_client.RpcClient
+    _sslcontext: ssl.SSLContext
 
     def __init__(self,
                  fingerprint: th.Optional[int],
@@ -40,12 +48,10 @@ class HodlRpcClient:
         import hddcoin.hodl.util  # lazy circref avoidance
         self._vlog_ = hddcoin.hodl.util.vlog
 
-        if fingerprint is None:
-            self.vlog(1, "HODL RPC operations will use the first available key/fingerprint")
+        self.pk, self.sk = hddcoin.hodl.util.getPkSkFromFingerprint(fingerprint)
+        self._fingerprint = fingerprint
 
-        fp, self.pk, self.sk = hddcoin.hodl.util.getPkSkFromFingerprint(fingerprint)
-        self._fingerprint = fp
-
+        self._sslcontext = ssl.create_default_context(cafile = get_mozilla_ca_crt())
         self._session = aiohttp.ClientSession(timeout = DEFAULT_TIMEOUT)
         self._closing_task = None
 
@@ -67,6 +73,8 @@ class HodlRpcClient:
             "HODL-cpk":    str(self.pk),
             "HODL-tstamp": str(tstamp),
             "HODL-sig":    str(tstamp_sig),
+            "HODL-os":     CLIENT_OS,
+            "HODL-appver": CLIENT_APPVER,
         }
         return authHeaders
 
@@ -80,18 +88,21 @@ class HodlRpcClient:
         Connection errors are reported up as HodlConnectionError.
 
         """
+        verbKwargs: th.Dict[str, th.Any]
+
         api_endpoint = f"{HODL_API_URL}/{endpoint}"
         self.vlog(2, f"Connecting to HDDcoin HODL Server at {api_endpoint}")
 
         if params is None:
             params = {}
 
+        verbKwargs = dict(ssl = self._sslcontext)
         if verb == HTTP_GET:
             verbFn = self._session.get
-            verbKwargs = dict(params = params)
+            verbKwargs["params"] = params
         elif verb == HTTP_POST:
             verbFn = self._session.post
-            verbKwargs = dict(json = params)
+            verbKwargs["json"] = params
         else:
             raise ValueError(f"Unsupported verb: {verb}")
 
@@ -100,7 +111,10 @@ class HodlRpcClient:
 
         # Make the call and process the response!
         try:
-            async with verbFn(api_endpoint, headers = hodlAuthHeaders, **verbKwargs) as resp:
+            async with verbFn(api_endpoint,
+                              headers = hodlAuthHeaders,
+                              **verbKwargs,
+                              ) as resp:
                 if resp.status == 200:
                     self.vlog(2, "HODL Server responded cleanly")
                     rpcRet = await resp.json()
@@ -110,9 +124,9 @@ class HodlRpcClient:
                     err_msg = f"HTTP STATUS {resp.status} → {status_text}"
                     self.vlog(1, f"Server is unhappy: {err_msg}")
                     raise exc.HodlConnectionError(err_msg)
-        except aiohttp.ClientConnectionError as _e:
+        except aiohttp.ClientConnectionError as e:
+            self.vlog(1, f"ERROR CONNECTING TO HODL SERVER: {e!r}")
             err_msg = f"HODL Server not responding. Please check your network, or try again later!"
-            self.vlog(1, err_msg)
             raise exc.HodlConnectionError(err_msg)
         except asyncio.TimeoutError:
             self.vlog(1, f"Timed out connecting to {api_endpoint}")

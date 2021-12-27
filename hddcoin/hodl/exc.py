@@ -15,3 +15,5 @@ class InsufficientFunds(HodlError): pass
 class UnhandledError(HodlError): pass
 class WalletIdNotFound(HodlError): pass
 class WalletNotSynced(HodlError): pass
+class FingerprintNeeded(HodlError): pass
+class WalletTooFragmented(HodlError): pass

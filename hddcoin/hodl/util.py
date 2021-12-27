@@ -107,9 +107,33 @@ async def getWalletRpcClient(config: th.Dict[str, th.Any],
                                           rpc_port,
                                           hddcoin.util.default_root.DEFAULT_ROOT_PATH,
                                           config)
+    async def _closeClientConnection():
+        vlog(2, "Closing walletRPC connection")
+        client.close()
+        await client.await_closed()
+        vlog(2, "walletRPC connection closed")
+
     vlog(2, "Logging in to wallet")
-    if (await client.log_in(fingerprint))["success"] is False:
-        raise exc.KeyNotFound()
+    try:
+        loginRet = (await client.log_in(fingerprint))
+    except aiohttp.ClientConnectionError as cce:
+        vlog(2, "Trapped ClientConnectionError (but will re-raise)")
+        await _closeClientConnection()
+        raise cce
+    except Exception as e:
+        vlog(2, "Trapped Exception (but will re-raise): {e!r}")
+        await _closeClientConnection()
+        raise e
+
+
+    if not loginRet["success"]:
+        vlog(1, "Unable to log in to standard wallet.")
+        await _closeClientConnection()
+        vlog(2, "Checking available key count")
+        keyCount = len(hddcoin.util.keychain.Keychain().get_all_private_keys())
+        vlog(2, f"Found {keyCount} available keys")
+        raise exc.KeyNotFound(str(keyCount))
+
     vlog(2, "Wallet login complete")
     return client
 
@@ -117,7 +141,6 @@ async def getWalletRpcClient(config: th.Dict[str, th.Any],
 def getFirstWalletAddr(config: th.Dict[str, th.Any],
                        sk: blspy.PrivateKey,
                        ) -> str:
-    vlog(1, f"Calculating default/first wallet address to use as payout_address")
     selected = config["selected_network"]
     prefix = config["network_overrides"]["config"][selected]["address_prefix"]
 
@@ -138,20 +161,28 @@ async def _walletIdExists(walletRpcClient: hddcoin.rpc.wallet_rpc_client.WalletR
     return False
 
 
-async def verifyWalletFunds(walletClient: hddcoin.rpc.wallet_rpc_client.WalletRpcClient,
+async def verifyWalletFunds(walletRpcClient: hddcoin.rpc.wallet_rpc_client.WalletRpcClient,
                             wallet_id: int,
                             requiredFunds_hdd: decimal.Decimal,
                             ) -> None:
     """Checks the specified wallet for requiredFunds_hdd, raising various exceptions on failure."""
-    if not (await walletClient.get_synced()):
-        raise exc.WalletNotSynced()
-
-    if not await _walletIdExists(walletClient, wallet_id):
+    if not await _walletIdExists(walletRpcClient, wallet_id):
         raise exc.WalletIdNotFound()
 
-    balances = await walletClient.get_wallet_balance(str(wallet_id))
-    if balances["spendable_balance"] < (requiredFunds_hdd * hddcoin.hodl.BYTES_PER_HDD):
-        raise exc.InsufficientFunds()
+    if not await walletRpcClient.get_synced():
+        raise exc.WalletNotSynced()
+
+    balances = await walletRpcClient.get_wallet_balance(str(wallet_id))
+    spendable_bytes = balances["spendable_balance"]
+    max_send_bytes = balances["max_send_amount"]
+    spendable_hdd = decimal.Decimal(spendable_bytes) / hddcoin.hodl.BYTES_PER_HDD
+    max_send_hdd = decimal.Decimal(max_send_bytes) / hddcoin.hodl.BYTES_PER_HDD
+
+    if spendable_hdd < requiredFunds_hdd:
+        raise exc.InsufficientFunds(str(spendable_bytes))
+
+    if max_send_hdd < requiredFunds_hdd:
+        raise exc.WalletTooFragmented(str(max_send_bytes))
 
 
 def _querySqliteDB(dbPath: str,
@@ -274,29 +305,24 @@ async def _closeMultipleRpcClients(clients: th.Sequence[th.Union[FullNodeRpcClie
         await client.await_closed()
 
 
-def getPkSkFromFingerprint(fingerprint: th.Optional[int],
-                           ) -> th.Tuple[int, blspy.G1Element, blspy.PrivateKey]:
-    if fingerprint:
-        vlog(1, f"Getting keypair information for fingerprint {fingerprint}")
-    else:
-        vlog(1, f"Automatically loading sole keypair info (no fingerprint given)")
+def getPkSkFromFingerprint(fingerprint: int,
+                           ) -> th.Tuple[blspy.G1Element, blspy.PrivateKey]:
+    """Given a key fingerprint, return (pk, sk). Raises KeyNotFound(keyCount) if no match found."""
+    if not fingerprint:
+        raise ValueError("A fingerprint is required")
+
     allPrivateKeyInfo = hddcoin.util.keychain.Keychain().get_all_private_keys()
+
     for sk, _seed in allPrivateKeyInfo:
         pk = sk.get_g1()
         fp = pk.get_fingerprint()
         vlog(2, f"FOUND key with fingerprint = {fp}")
-        if fingerprint is None or (fp == fingerprint):
+        if fp == fingerprint:
             vlog(2, f"SELECTING key with fingerprint = {fp}")
-            break
-    else:
-        if fingerprint is None:
-            vlog(1, "No keys found! Check `hddcoin keys show`")
-        else:
-            vlog(1, f"No key exists with fingerprint of {fingerprint}")
-        raise exc.KeyNotFound()
+            return (pk, sk)
 
-    return (fp, pk, sk)
-
+    vlog(1, f"No key exists with fingerprint of {fingerprint}")
+    raise exc.KeyNotFound(str(len(allPrivateKeyInfo)))
 
 
 async def callCliCmdHandler(handler: th.Callable,
@@ -309,6 +335,9 @@ async def callCliCmdHandler(handler: th.Callable,
                             cmdKwargs: th.Optional[th.Dict[str, th.Any]],
                             ) -> None:
     """Wrapper call for all HODL CLI command handlers."""
+    fullNodeRpcClient: th.Optional[FullNodeRpcClient] = None
+    walletRpcClient: th.Optional[WalletRpcClient] = None
+
     hddcoin.hodl.util.verbosity = verbosity
 
     if cmdKwargs is None:
@@ -319,7 +348,36 @@ async def callCliCmdHandler(handler: th.Callable,
         if injectConfig:
             cmdKwargs["config"] = config
 
-    # Create a HoldRpcClient...
+    if fingerprint is None:
+        # All HODL RPC calls require a public key, so we *need* a fingerprint.
+        vlog(2, "Collecting available fingerprints (no fingerprint was specified)")
+        fingerprints = [pki[0].get_g1().get_fingerprint()
+                        for pki in hddcoin.util.keychain.Keychain().get_all_private_keys()]
+        numFingerprints = len(fingerprints)
+        if numFingerprints == 0:
+            print(f"{R}ERROR: {Y}No keys found! HODL'ing requires a fully synced wallet.{_}")
+            return
+        elif numFingerprints == 1:
+            vlog(1, f"Automatically selecting the only available fingerprint ({fingerprint})")
+            fingerprint = fingerprints[0]
+        else:
+            vlog(1, "Prompting user for fingerprint (since none was specified)")
+            print("Choose the wallet key/fingerprint you would like to use:")
+            for i, fp in enumerate(sorted(fingerprints), 1):
+                print(f"  {i}: {fp}")
+            print("Enter a number, or pick q to quit [q]: ", end = "")
+            response = input("")
+            if not response or response[0].lower() == "q":
+                print(f"Aborted.")
+                print(f"To see wallet balances for these keys, use `{Y}hddcoin wallet show{_}`.")
+                return
+            try:
+                fingerprint = fingerprints[int(response) - 1]
+            except Exception:
+                print(f"{R}ERROR: {Y}Invalid selection{_}")
+                return
+
+    # Create a HodlRpcClient...
     #  - every `hddcoin hodl` operation requires a call to the HODL server
     #  - WORTH NOTING: Once a HODL contract is launched (i.e. the smart coin is on-chain) this is
     #     not strictly necessary (since full reveal and solutions to copmpletely manage the coin are
@@ -327,16 +385,21 @@ async def callCliCmdHandler(handler: th.Callable,
     #     since there is no need to have the receipts at hand to work with the contracts.
     try:
         hodlRpcClient = HodlRpcClient(fingerprint)
-    except exc.KeyNotFound:
-        print(f"{R}ERROR: {Y}Unknown fingerprint. Please check `{W}hddcoin keys show{Y}`{_}")
+    except exc.KeyNotFound as knf:
+        # This can happen because A) we don't validate fingerprints given via -f, and B) the key
+        # situation may have changed in the background.
+        keyCount = int(knf.args[0])
+        if keyCount:
+            print(f"{R}ERROR: {Y}Unknown fingerprint. Please check `{W}hddcoin keys show{Y}`{_}")
+        else:
+            print(f"{R}ERROR: {Y}No keys found! HODL'ing requires a fully synced wallet.{_}")
         return
     except Exception as e:
         print(f"{R}ERROR: {Y}Unable to create HODL RPC client: {e!r}{_}")
         return
     toClose: th.List[th.Union[HodlRpcClient, WalletRpcClient, FullNodeRpcClient]] = [hodlRpcClient]
 
-    # Create a full_node RPC client, if needed by the command
-    fullNodeRpcClient: th.Optional[FullNodeRpcClient] = None
+    # Create a full_node RPC client if needed by the command
     if fullNodeRpcInfo is not None:
         vlog(2, "Creating RPC client connection with local full_node")
         rpc_port = fullNodeRpcInfo
@@ -351,7 +414,6 @@ async def callCliCmdHandler(handler: th.Callable,
         cmdKwargs["fullNodeRpcClient"] = fullNodeRpcClient
         toClose.append(fullNodeRpcClient)
 
-    walletRpcClient: th.Optional[WalletRpcClient] = None
     if walletRpcInfo is not None:
         vlog(2, "Creating RPC client connection with local wallet")
         rpc_port, fingerprint = th.cast(th.Tuple[int, int], walletRpcInfo)
@@ -395,6 +457,10 @@ async def callCliCmdHandler(handler: th.Callable,
             print(f"{R}Connection error: {Y}The HODL server is not available right now.\n"
                   f"{W}The server is likely under maintenance. Please try again later!\n"
                   f"If this problem persists, please contact the HDDcoin team!{_}")
+        elif "HTTP STATUS 401" in e.msg:
+            print(f"{R}Connection error: {Y}Unable to authenticate with the HODL server.\n"
+                  f" ==> {W}HODL requires accurate time. Please make sure your clock is synced.\n"
+                  f" ==> If this problem persists, please contact the HDDcoin team!{_}")
         else:
             print(f"{R}Connection error: {Y}{e.msg}{_}")
     except exc.HodlError as e:
