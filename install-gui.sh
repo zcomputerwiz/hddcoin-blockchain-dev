@@ -33,7 +33,7 @@ if [ "$(uname)" = "Linux" ]; then
 					echo >&2 "Please install NODEJS&NPM manually"
 			}
 		else
-			#sudo apt-get install -y npm nodejs libxss1
+			sudo apt-get install -y npm nodejs libxss1
 			sudo npm install -g n
 			sudo n stable
 			export PATH="$PATH"
