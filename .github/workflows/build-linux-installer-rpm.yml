@@ -15,15 +15,14 @@ on:
 jobs:
   build:
     name: Linux .rpm installer on Python 3.9
-    runs-on: ubuntu-latest
-    container:
-      image: chianetwork/centos7-builder:latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
         python-version: [3.9]
+        os: [ubuntu-latest]
 
     steps:
     - name: Cancel previous runs on the same branch
