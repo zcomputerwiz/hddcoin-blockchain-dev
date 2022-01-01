@@ -14,15 +14,15 @@ on:
 
 jobs:
   build:
-    name: Linux .rpm installer on Python 3.9
+    name: Linux .rpm installer on Python 3.8
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
-        python-version: [3.9]
-        os: [ubuntu-latest]
+        python-version: [3.8]
+        os: [ubuntu-18.04]
 
     steps:
     - name: Cancel previous runs on the same branch
