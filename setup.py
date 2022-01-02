@@ -16,6 +16,7 @@ dependencies = [
     "colorlog==5.0.1",  # Adds color to logs
     "concurrent-log-handler==0.9.19",  # Concurrently log and rotate logs
     "cryptography==3.4.7",  # Python cryptography library for TLS - keyring conflict
+    "distro==1.6.0",  # os distro identification library
     "fasteners==0.16.3",  # For interprocess file locking
     "keyring==23.0.1",  # Store keys in MacOS Keychain, Windows Credential Locker
     "keyrings.cryptfile==1.3.4",  # Secure storage for keys on Linux (Will be replaced)
@@ -30,6 +31,7 @@ dependencies = [
     "watchdog==2.1.6",  # Filesystem event watching - watches keyring.yaml
     "click-params==0.1.2",  # For the CLI
     "validators==0.18.2",   # For the CLI (a click-params dep)
+    "requests",  # for HODL help file download
 ]
 
 upnp_dependencies = [

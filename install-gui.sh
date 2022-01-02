@@ -34,9 +34,6 @@ if [ "$(uname)" = "Linux" ]; then
 			}
 		else
 			sudo apt-get install -y npm nodejs libxss1
-			sudo npm install -g n
-			sudo n stable
-			export PATH="$PATH"
 		fi
 	elif type yum &&  [ ! -f "/etc/redhat-release" ] && [ ! -f "/etc/centos-release" ] && [ ! -f /etc/rocky-release ] && [ ! -f /etc/fedora-release ]; then
 		# AMZN 2

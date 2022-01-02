@@ -24,7 +24,7 @@ try {
     $ErrorActionPreference = "SilentlyContinue"
     npm install --loglevel=error
     npm audit fix
-    ./node_modules/.bin/electron-rebuild -f -w node-pty
+	./node_modules/.bin/electron-rebuild -f -w node-pty
     npm run build
     py ..\installhelper.py
 

@@ -138,17 +138,28 @@ async def getWalletRpcClient(config: th.Dict[str, th.Any],
     return client
 
 
-def getFirstWalletAddr(config: th.Dict[str, th.Any],
-                       sk: blspy.PrivateKey,
-                       ) -> str:
+def getNthWalletAddr(config: th.Dict[str, th.Any],
+                     sk: blspy.PrivateKey,
+                     n: int,
+                     ) -> str:
+    # Note that this does NOT check if the address has been issued yet.
+    if n < 0:
+        raise ValueError("n must be >= 0")
+
     selected = config["selected_network"]
     prefix = config["network_overrides"]["config"][selected]["address_prefix"]
 
     addr = bech32m.encode_puzzle_hash(
-        create_puzzlehash_for_pk(master_sk_to_wallet_sk(sk, uint32(0)).get_g1()),
+        create_puzzlehash_for_pk(master_sk_to_wallet_sk(sk, uint32(n)).get_g1()),
         prefix,
     )
     return addr
+
+
+def getFirstWalletAddr(config: th.Dict[str, th.Any],
+                       sk: blspy.PrivateKey,
+                       ) -> str:
+    return getNthWalletAddr(config, sk, 0)
 
 
 async def _walletIdExists(walletRpcClient: hddcoin.rpc.wallet_rpc_client.WalletRpcClient,
@@ -213,7 +224,8 @@ def queryBlockchainDB(sql: str,
                       config: th.Optional[th.Dict] = None,
                       ) -> th.List[th.Tuple[th.Any, ...]]:
     dbPath = getBlockchainDbPath(config)
-    return _querySqliteDB(dbPath, sql, params)
+    roPath = f"file:{dbPath}?mode=ro"
+    return _querySqliteDB(roPath, sql, params)
 
 
 sql_hodlContractSpendInfo = """\
@@ -330,8 +342,8 @@ async def callCliCmdHandler(handler: th.Callable,
                             fingerprint: th.Optional[int],
                             *,
                             injectConfig: bool = False,
-                            fullNodeRpcInfo: th.Optional[int] = None,  # rpcPort or None if not needed
-                            walletRpcInfo: th.Optional[th.Tuple[th.Optional[int], int]] = None,
+                            fullNodeRpcPort: th.Optional[int] = None,
+                            walletRpcPort: th.Optional[int] = None,
                             cmdKwargs: th.Optional[th.Dict[str, th.Any]],
                             ) -> None:
     """Wrapper call for all HODL CLI command handlers."""
@@ -343,7 +355,7 @@ async def callCliCmdHandler(handler: th.Callable,
     if cmdKwargs is None:
         cmdKwargs = {}
 
-    if injectConfig or fullNodeRpcInfo is not None or walletRpcInfo is not None:
+    if injectConfig or fullNodeRpcPort or walletRpcPort:
         config = hddcoin.hodl.util.loadConfig()
         if injectConfig:
             cmdKwargs["config"] = config
@@ -400,11 +412,11 @@ async def callCliCmdHandler(handler: th.Callable,
     toClose: th.List[th.Union[HodlRpcClient, WalletRpcClient, FullNodeRpcClient]] = [hodlRpcClient]
 
     # Create a full_node RPC client if needed by the command
-    if fullNodeRpcInfo is not None:
+    if fullNodeRpcPort is not None:
         vlog(2, "Creating RPC client connection with local full_node")
-        rpc_port = fullNodeRpcInfo
         try:
-            fullNodeRpcClient = await hddcoin.hodl.util.getFullNodeRpcClient(config, rpc_port)
+            fullNodeRpcClient = await hddcoin.hodl.util.getFullNodeRpcClient(config,
+                                                                             fullNodeRpcPort)
         except Exception as e:
             print(f"{R}ERROR: {Y}Unable to connect to full_node RPC. {W}(Is it running?){_}")
             if not isinstance(e, aiohttp.ClientConnectionError):
@@ -414,16 +426,15 @@ async def callCliCmdHandler(handler: th.Callable,
         cmdKwargs["fullNodeRpcClient"] = fullNodeRpcClient
         toClose.append(fullNodeRpcClient)
 
-    if walletRpcInfo is not None:
+    if walletRpcPort is not None:
         vlog(2, "Creating RPC client connection with local wallet")
-        rpc_port, fingerprint = th.cast(th.Tuple[int, int], walletRpcInfo)
         connStart_s = time.monotonic()
         print("Connecting to local wallet (this can take a minute)... ", end = "")
         sys.stdout.flush()
         try:
             walletRpcClient = await hddcoin.hodl.util.getWalletRpcClient(config,
                                                                          fingerprint,
-                                                                         rpc_port)
+                                                                         walletRpcPort)
         except Exception as e:
             print(f"{R}ERROR{_}")
             print(f"{R}ERROR: {Y}Unable to connect to wallet RPC. {W}(Is it running?){_}")
