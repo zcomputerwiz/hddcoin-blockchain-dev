@@ -19,7 +19,8 @@ const fullPath = (existsSync((process.platform === 'win32') ? path.join(__dirnam
 const ENV_HDDCOIN = ((process.platform === 'win32') ? '$env:Path += ";' : 'export PATH="$PATH:') + fullPath + '"';
 const SHELL = (process.platform === 'win32') ? 'powershell.exe' : 'bash';
 const pty = require('node-pty');
-const { clipboard } = require('electron');
+const electron = require('electron');
+const clipboard = electron.clipboard;
 
 // HODL Help / Instructions Stylying
 const StyledPaper = styled(Paper)`
@@ -91,8 +92,10 @@ term.onKey(key => {
     ptyProcess.write('')
   } else if (term.hasSelection() && key.domEvent.ctrlKey && key.domEvent.key === "KeyC") {
     clipboard.writeText(term.getSelection())
+    console.log("Copied selection: " + clipboard.readText())
   } else if (key.domEvent.ctrlKey && key.domEvent.key === "KeyV") {
     term.paste(clipboard.readText())
+    console.log("Pasted contents from clipboard: " + clipboard.readText())
   } else {
     ptyProcess.write(char);
   }
