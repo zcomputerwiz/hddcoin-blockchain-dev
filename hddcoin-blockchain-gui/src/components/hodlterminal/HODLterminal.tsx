@@ -19,6 +19,7 @@ const fullPath = (existsSync((process.platform === 'win32') ? path.join(__dirnam
 const ENV_HDDCOIN = ((process.platform === 'win32') ? '$env:Path += ";' : 'export PATH="$PATH:') + fullPath + '"';
 const SHELL = (process.platform === 'win32') ? 'powershell.exe' : 'bash';
 const pty = require('node-pty');
+const { clipboard } = require('electron');
 
 // HODL Help / Instructions Stylying
 const StyledPaper = styled(Paper)`
@@ -83,12 +84,15 @@ term.onKey(key => {
     ptyProcess.write('\x1b[C')
   } else if (char === "ArrowLeft") {
     ptyProcess.write('\x1b[D')
-  } else if (char === "Delete" || char === "Insert" || char === "Home" || char === "End" || char === "PageUp" || char === "PageDown" || char === "Escape" || char === "F1" || char === "F2" || char === "F3" || char === "F4" || char === "F5" || char === "F6" || char === "F7" || char === "F8" || char === "F9" || char === "F10" || char === "F11" || char === "F12") {
+  } else if (char === "Delete") {
+    ptyProcess.write('\x1b[C')
+    ptyProcess.write('\b');
+  } else if (char === "Insert" || char === "Home" || char === "End" || char === "PageUp" || char === "PageDown" || char === "Escape" || char === "F1" || char === "F2" || char === "F3" || char === "F4" || char === "F5" || char === "F6" || char === "F7" || char === "F8" || char === "F9" || char === "F10" || char === "F11" || char === "F12") {
     ptyProcess.write('')
   } else if (term.hasSelection() && key.domEvent.ctrlKey && key.domEvent.key === "KeyC") {
-    document.execCommand('copy') 
+    clipboard.writeText(term.getSelection())
   } else if (key.domEvent.ctrlKey && key.domEvent.key === "KeyV") {
-    ptyProcess.write( clipboard.readText() )
+    term.paste(clipboard.readText())
   } else {
     ptyProcess.write(char);
   }
