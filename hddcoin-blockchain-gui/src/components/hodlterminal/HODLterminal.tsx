@@ -92,11 +92,12 @@ term.onKey(key => {
   } else if (char === "Insert" || char === "Home" || char === "End" || char === "PageUp" || char === "PageDown" || char === "Escape" || char === "F1" || char === "F2" || char === "F3" || char === "F4" || char === "F5" || char === "F6" || char === "F7" || char === "F8" || char === "F9" || char === "F10" || char === "F11" || char === "F12") {
     ptyProcess.write('')
   } else if (term.hasSelection() && key.domEvent.ctrlKey && key.domEvent.key === "c") {
-    document.execCommand('copy')
+    //document.execCommand('copy')
+    clipboard.writeText(term.getSelected())
     console.log("Copied selection: " + clipboard.readText())
   } else if (key.domEvent.ctrlKey && key.domEvent.key === "v") {
     term.focus();
-    document.execCommand('paste')
+    ptyProcess.write(clipboard.readText())
     console.log("Pasted contents from clipboard: " + clipboard.readText())
   } else {
     ptyProcess.write(char);
