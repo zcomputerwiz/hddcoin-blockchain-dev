@@ -91,10 +91,11 @@ term.onKey(key => {
   } else if (char === "Insert" || char === "Home" || char === "End" || char === "PageUp" || char === "PageDown" || char === "Escape" || char === "F1" || char === "F2" || char === "F3" || char === "F4" || char === "F5" || char === "F6" || char === "F7" || char === "F8" || char === "F9" || char === "F10" || char === "F11" || char === "F12") {
     ptyProcess.write('')
   } else if (term.hasSelection() && key.domEvent.ctrlKey && key.domEvent.key === "KeyC") {
-    clipboard.writeText(term.getSelection())
+    document.execCommand('copy') 
     console.log("Copied selection: " + clipboard.readText())
   } else if (key.domEvent.ctrlKey && key.domEvent.key === "KeyV") {
-    term.paste(clipboard.readText())
+    term.focus();
+    document.execCommand('paste') 
     console.log("Pasted contents from clipboard: " + clipboard.readText())
   } else {
     ptyProcess.write(char);
