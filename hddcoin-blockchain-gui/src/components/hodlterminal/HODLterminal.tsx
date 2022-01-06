@@ -71,6 +71,7 @@ ptyProcess.on('data', function(data) {
 // Get keys
 term.onKey(key => {
   const char = key.domEvent.key;
+  console.log("Ctrl: " + key.domEvent.ctrlKey + " key: " + key.domEvent.key)
   if (char === "Enter") {
     ptyProcess.write('\r');
   } else if (char === "Backspace") {
@@ -100,6 +101,7 @@ term.onKey(key => {
   } else {
     ptyProcess.write(char);
   }
+  console.log()
 });
 
 // Write text inside the terminal
