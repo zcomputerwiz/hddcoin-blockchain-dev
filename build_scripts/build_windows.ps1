@@ -112,6 +112,11 @@ npm run build
 If ($LastExitCode -gt 0){
     Throw "npm run build failed!"
 }
+Write-Output "   ---"
+Write-Output "Copy winpty binaries to output directories"
+Write-Output "   ---"
+Copy-Item "node_modules\node-pty\build\Release\winpty.dll" -Destination "build\renderer\node_modules\node-pty\build\Release\"
+Copy-Item "node_modules\node-pty\build\Release\winpty-agent.exe" -Destination "build\renderer\node_modules\node-pty\build\Release\"
 
 Write-Output "   ---"
 Write-Output "Increase the stack for hddcoin command for (hddcoin plots create) chiapos limitations"
@@ -135,7 +140,7 @@ Write-Output "   ---"
 
 Write-Output "   ---"
 Write-Output "electron-packager"
-electron-packager . HDDcoin --asar.unpack="{**\daemon\**,**\node_modules\node-pty\build\Release\*}" --overwrite --icon=.\src\assets\img\hddcoin.ico --app-version=$packageVersion
+electron-packager . HDDcoin --asar.unpack="{**\daemon\**,**\renderer\node_modules\node-pty\build\Release\*}" --overwrite --icon=.\src\assets\img\hddcoin.ico --app-version=$packageVersion
 Write-Output "   ---"
 
 Write-Output "   ---"
