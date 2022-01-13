@@ -37,7 +37,6 @@ Write-Output "   ---"
 Write-Output "Get HDDCOIN_INSTALLER_VERSION"
 # The environment variable HDDCOIN_INSTALLER_VERSION needs to be defined
 $env:HDDCOIN_INSTALLER_VERSION = python .\build_scripts\installer-version.py -win
-$env:HDDCOIN_INSTALLER_VERSION = '1.2.11'
 
 if (-not (Test-Path env:HDDCOIN_INSTALLER_VERSION)) {
   $env:HDDCOIN_INSTALLER_VERSION = '0.0.0'
