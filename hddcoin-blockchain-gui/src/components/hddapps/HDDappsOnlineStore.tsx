@@ -12,57 +12,46 @@ const StyledHDDappsIcon = styled(HDDappsIcon)`
   font-size: 4rem;
 `;
 
-export default function HDDappsHODL() {
+export default function HDDappsOnlineStore() {
   const history = useHistory();
 
   function hddAppsLearnMore() {
             window.open(
-              "https://hddcoin.org/hodl", "_blank");
+              "https://store.hddcoin.org", "_blank");
         }
-  
-   function hddAppsOpenHODLTerminal() {
-    history.push('/dashboard/hodlterminal/HODLterminal');
-  }
-  
+
   return (
     <Grid container>
-	  <Grid xs={12} md={12} lg={12} item>
+      <Grid xs={12} md={12} lg={12} item>
         <CardHero>
           <StyledHDDappsIcon color="primary" />
           <Typography variant="body1">
             <Trans>
-              HDDcoin HODL Program. 
-              Lock in your coins and get rewards. 
-              HDDcoin HODL offers Coin Holders the opportunity to earn rewards on HDD locked in a Contract for specific hold durations. 
-              Contracts are secured and managed 100% on-chain using a Smart Coin Contract coded in CLVM (the on-chain programming language used by HDDcoin).  
+              HDDcoin Online Store. 
+              Accepting HDD for Purchases. 
+              Online Store has launched. 
+              All merch is currently ON SALE during our Grand Opening / Holiday promotion. 
+              Go grab your favorite items quickly while this offer lasts.
+              The default Store payment method is HDD. All the major Credit/Debit Cards and PayPal are also accepted.  
 			  <Link
                 target="_blank"
-                href="https://hddcoin.org/hodl"
+                href="https://store.hddcoin.org/"
               >
                 Learn more
 			 </Link>
             </Trans>
-          </Typography>		  
+          </Typography>
 		  
 		  <Flex gap={1}>
             <Button
-              onClick={hddAppsOpenHODLTerminal}
+              onClick={hddAppsLearnMore}
               variant="contained"
               color="primary"
-              fullWidth
+              //fullWidth
             >
-              <Trans>Open HODL Terminal</Trans>
+              <Trans>Visit Online Store</Trans>
             </Button>
-			
-            <Button
-              onClick={hddAppsLearnMore}
-              variant="outlined"
-              color="primary"
-              fullWidth
-            >
-              <Trans>Learn about HODL</Trans>
-            </Button>
-          </Flex>
+		  </Flex>
 		  
         </CardHero>
       </Grid>

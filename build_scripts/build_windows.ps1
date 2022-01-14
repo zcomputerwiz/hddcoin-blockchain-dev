@@ -130,6 +130,11 @@ $packageName = "HDDcoin-$packageVersion"
 Write-Output "packageName is $packageName"
 
 Write-Output "   ---"
+Write-Output "Update Installer Splash Screen Image"
+Copy-Item "src\assets\img\hddcoin-install-loading.gif" -Destination "node_modules\electron-winstaller\resources\install-spinner.gif"
+Write-Output "   ---"
+
+Write-Output "   ---"
 Write-Output "fix version in package.json"
 choco install jq
 cp package.json package.json.orig

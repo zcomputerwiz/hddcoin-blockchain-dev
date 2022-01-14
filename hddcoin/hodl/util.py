@@ -224,8 +224,8 @@ def queryBlockchainDB(sql: str,
                       config: th.Optional[th.Dict] = None,
                       ) -> th.List[th.Tuple[th.Any, ...]]:
     dbPath = getBlockchainDbPath(config)
-    roPath = f"file:{dbPath}?mode=ro"
-    return _querySqliteDB(roPath, sql, params)
+    vlog(2, f"Querying DB at {dbPath}")
+    return _querySqliteDB(dbPath, sql, params)
 
 
 sql_hodlContractSpendInfo = """\
@@ -288,7 +288,9 @@ async def cancelContract(hodlRpcClient: HodlRpcClient,
                                 f"{contract_id}. PLEASE NOTIFY THE HDDCOIN TEAM!")
 
     cr = await fullNodeRpcClient.get_coin_record_by_name(bytes32.fromhex(recentCoinName))
-    assert cr is not None
+    if cr is None:
+        raise exc.HodlError(f"Unable to get info on coin {recentCoinName}. "
+                            f"Is full node running?")
     ph_b32 = addr2puzhash(contract_address, asString = False)
     reveal = SerializedProgram.fromhex(vcd.puzzle_reveal)
     solution = SerializedProgram.fromhex(str(Program.to([1, cr.coin.amount, ph_b32])))
@@ -355,7 +357,7 @@ async def callCliCmdHandler(handler: th.Callable,
     if cmdKwargs is None:
         cmdKwargs = {}
 
-    if injectConfig or fullNodeRpcPort or walletRpcPort:
+    if injectConfig or (fullNodeRpcPort is not None) or (walletRpcPort is not None):
         config = hddcoin.hodl.util.loadConfig()
         if injectConfig:
             cmdKwargs["config"] = config
@@ -375,7 +377,7 @@ async def callCliCmdHandler(handler: th.Callable,
         else:
             vlog(1, "Prompting user for fingerprint (since none was specified)")
             print("Choose the wallet key/fingerprint you would like to use:")
-            for i, fp in enumerate(sorted(fingerprints), 1):
+            for i, fp in enumerate(fingerprints, 1):
                 print(f"  {i}: {fp}")
             print("Enter a number, or pick q to quit [q]: ", end = "")
             response = input("")
@@ -414,18 +416,27 @@ async def callCliCmdHandler(handler: th.Callable,
     # Create a full_node RPC client if needed by the command
     if fullNodeRpcPort is not None:
         vlog(2, "Creating RPC client connection with local full_node")
-        try:
-            fullNodeRpcClient = await hddcoin.hodl.util.getFullNodeRpcClient(config,
-                                                                             fullNodeRpcPort)
-        except Exception as e:
-            print(f"{R}ERROR: {Y}Unable to connect to full_node RPC. {W}(Is it running?){_}")
-            if not isinstance(e, aiohttp.ClientConnectionError):
-                print(f"  → Error was: {e!r}")
-            await _closeMultipleRpcClients(toClose)
-            return
+        fullNodeRpcClient = await hddcoin.hodl.util.getFullNodeRpcClient(config,
+                                                                         fullNodeRpcPort)
         cmdKwargs["fullNodeRpcClient"] = fullNodeRpcClient
         toClose.append(fullNodeRpcClient)
 
+        # Also make sure the blockchain is synced up
+        try:
+            blockchainState = await fullNodeRpcClient.get_blockchain_state()  #type:ignore
+        except Exception as e:
+            print(f"{R}ERROR: {Y}Unable to connect to full_node RPC. {W}(Is it running?){_}")
+            if not isinstance(e, aiohttp.ClientConnectionError):
+                print(f" ==> Error was: {e!r}")
+            await _closeMultipleRpcClients(toClose)
+            return
+
+        if not blockchainState.get("sync", {}).get("synced", False):
+            print(f"{R}ERROR: {Y}Blockchain not synced! A synced full node is required.{_}")
+            await _closeMultipleRpcClients(toClose)
+            return
+
+    # Create a wallet RPC client if needed by the command
     if walletRpcPort is not None:
         vlog(2, "Creating RPC client connection with local wallet")
         connStart_s = time.monotonic()
@@ -439,7 +450,7 @@ async def callCliCmdHandler(handler: th.Callable,
             print(f"{R}ERROR{_}")
             print(f"{R}ERROR: {Y}Unable to connect to wallet RPC. {W}(Is it running?){_}")
             if not isinstance(e, aiohttp.ClientConnectionError):
-                print(f"  → Error was: {e!r}")
+                print(f" ==> Error was: {e!r}")
             await _closeMultipleRpcClients(toClose)
             return
         print(f"{G}OK{_}  [took {time.monotonic() - connStart_s:.2f} s]")

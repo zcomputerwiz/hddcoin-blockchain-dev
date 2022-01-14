@@ -6,52 +6,54 @@ import { Flex } from '@hddcoin/core';
 import { Button, Grid, Typography, Link } from '@material-ui/core';
 import { CardHero } from '@hddcoin/core';
 import { HDDapps as HDDappsIcon } from '@hddcoin/icons';
-import HODLterminal from '../hodlterminal/HODLterminal';
 
 const StyledHDDappsIcon = styled(HDDappsIcon)`
   font-size: 4rem;
 `;
 
-export default function HDDappsHODL() {
+export default function HDDappsExchangeTrading() {
   const history = useHistory();
 
   function hddAppsLearnMore() {
             window.open(
-              "https://hddcoin.org/hodl", "_blank");
+              "https://hddcoin.org/exchanges", "_blank");
         }
-  
-   function hddAppsOpenHODLTerminal() {
-    history.push('/dashboard/hodlterminal/HODLterminal');
-  }
-  
+		
+  function hddAppsTradeHDD() {
+            window.open(
+              "https://www.xt.com/trade/hdd_usdt", "_blank");
+        }
+
+
   return (
     <Grid container>
-	  <Grid xs={12} md={12} lg={12} item>
+      <Grid xs={12} md={12} lg={12} item>
         <CardHero>
           <StyledHDDappsIcon color="primary" />
           <Typography variant="body1">
             <Trans>
-              HDDcoin HODL Program. 
-              Lock in your coins and get rewards. 
-              HDDcoin HODL offers Coin Holders the opportunity to earn rewards on HDD locked in a Contract for specific hold durations. 
-              Contracts are secured and managed 100% on-chain using a Smart Coin Contract coded in CLVM (the on-chain programming language used by HDDcoin).  
+              HDDcoin Exchange Trading.
+              HDD available for trading on Exchange.
+              The HDD/USDT pair is currently trading on XT.com, a top-20 Exchange with great reputation, 
+              trading volumes, and customer support. Click here to start trading today.
+              XT.com has over 2 million registered users, more than 200,000 active users monthly, and more than 7 million users in its ecosystem.  
 			  <Link
                 target="_blank"
-                href="https://hddcoin.org/hodl"
+                href="https://hddcoin.org/exchanges"
               >
                 Learn more
 			 </Link>
             </Trans>
-          </Typography>		  
-		  
+          </Typography>
+		  	
 		  <Flex gap={1}>
             <Button
-              onClick={hddAppsOpenHODLTerminal}
+              onClick={hddAppsTradeHDD}
               variant="contained"
               color="primary"
               fullWidth
             >
-              <Trans>Open HODL Terminal</Trans>
+              <Trans>Trade HDD Now</Trans>
             </Button>
 			
             <Button
@@ -60,9 +62,9 @@ export default function HDDappsHODL() {
               color="primary"
               fullWidth
             >
-              <Trans>Learn about HODL</Trans>
+              <Trans>Learn about Exchanges</Trans>
             </Button>
-          </Flex>
+          </Flex>	  
 		  
         </CardHero>
       </Grid>
