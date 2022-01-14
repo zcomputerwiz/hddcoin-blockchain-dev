@@ -39,7 +39,7 @@ import config from '../../../../config/config';
 import type { RootState } from '../../../../modules/rootReducer';
 import WalletHistory from '../../../wallet/WalletHistory';
 import { deleteUnconfirmedTransactions } from '../../../../modules/incoming';
-import WalletCards from './WalletCards';
+import HODLWalletCards from './WalletCards';
 import WalletStatus from '../../../wallet/WalletStatus';
 import useOpenDialog from '../../../../hooks/useOpenDialog';
 
@@ -148,10 +148,10 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
-  sendCard: {
+  commitCard: {
     marginTop: theme.spacing(2),
   },
-  sendButton: {
+  commitButton: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
     width: 150,
@@ -201,7 +201,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-type SendCardProps = {
+type CommitCardProps = {
   wallet_id: number;
 };
 
@@ -211,7 +211,7 @@ type SendTransactionData = {
   fee: string;
 };
 
-function SendCard(props: SendCardProps) {
+function CommitCard(props: CommitCardProps) {
   const { wallet_id } = props;
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -456,7 +456,7 @@ type StandardWalletProps = {
   showTitle?: boolean;
 };
 
-export default function StandardWallet(props: StandardWalletProps) {
+export default function StandardHODLWallet(props: StandardWalletProps) {
   const { wallet_id, showTitle } = props;
   const dispatch = useDispatch();
   const openDialog = useOpenDialog();
@@ -519,8 +519,8 @@ export default function StandardWallet(props: StandardWalletProps) {
       </Flex>
 
       <Flex flexDirection="column" gap={3}>
-        <WalletCards wallet_id={wallet_id} />
-        <SendCard wallet_id={wallet_id} />
+        <HODLWalletCards wallet_id={wallet_id} />
+        <CommitCard wallet_id={wallet_id} />
         <WalletHistory walletId={wallet_id} />
       </Flex>
     </Flex>

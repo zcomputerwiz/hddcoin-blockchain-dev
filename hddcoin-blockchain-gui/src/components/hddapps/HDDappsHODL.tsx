@@ -7,7 +7,7 @@ import { Button, Grid, Typography, Link } from '@material-ui/core';
 import { CardHero } from '@hddcoin/core';
 import { HDDapps as HDDappsIcon } from '@hddcoin/icons';
 import HODLterminal from '../hodlterminal/HODLterminal';
-import HODLWallet from './wallet/HDDappsHODLWallet'
+import HODLWallet from './wallet/HDDappsHODLWallet';
 
 const StyledHDDappsIcon = styled(HDDappsIcon)`
   font-size: 4rem;

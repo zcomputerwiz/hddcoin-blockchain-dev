@@ -8,7 +8,7 @@ import {
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import { FormatLargeNumber } from '@hddcoin/core';
-import StandardWallet from './standard/WalletStandard';
+import StandardHODLWallet from './standard/WalletStandard';
 import type { RootState } from '../../../modules/rootReducer';
 import LayoutMain from '../../layout/LayoutMain';
 import { useHistory, useRouteMatch, useParams } from 'react-router-dom';
@@ -79,18 +79,13 @@ export default function HODLWallet() {
   const wallets = useSelector((state: RootState) => state.wallet_state.wallets);
   const loading = !wallets;
 
-  // redirect to default "standard wallet"
-  useEffect(() => {
-    history.push('/dashboard/wallets/1');
-  }, [wallets, walletId]);
-
   return (
     <LayoutMain
       loading={loading}
       loadingTitle={<Trans>Loading list of wallets</Trans>}
       title={<Trans>Wallets</Trans>}
     >
-      <StandardWallet wallet_id={1} showTitle />
+      <StandardHODLWallet wallet_id={1} showTitle />
     </LayoutMain>
   );
 }

@@ -9,7 +9,7 @@ type Props = {
   wallet_id: number;
 };
 
-export default function WalletCardPendingBalance(props: Props) {
+export default function HODLWalletCardPendingBalance(props: Props) {
   const { wallet_id } = props;
 
   const { wallet, loading } = useWallet(wallet_id);
