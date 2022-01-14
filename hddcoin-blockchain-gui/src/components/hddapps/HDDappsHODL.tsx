@@ -26,7 +26,7 @@ export default function HDDappsHODL() {
   }
 
   function hddAppsOpenHODLWallet() {
-    history.push('/dashboard/hddapps/wallet/HDDappsHODLWallet');
+    history.push('/dashboard/HDDappsHODL/wallet/HDDappsHODLWallet');
   }
   
   return (
