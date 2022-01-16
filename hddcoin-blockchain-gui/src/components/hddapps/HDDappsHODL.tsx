@@ -6,8 +6,8 @@ import { Flex } from '@hddcoin/core';
 import { Button, Grid, Typography, Link } from '@material-ui/core';
 import { CardHero } from '@hddcoin/core';
 import { HDDapps as HDDappsIcon } from '@hddcoin/icons';
-import HODLterminal from '../hodlterminal/HODLterminal';
-import HODLWallet from './wallet/HDDappsHODLWallet';
+//import HODLterminal from '../hodlterminal/HODLterminal';
+import HODLWallet from './HDDappsHODLWallet';
 
 const StyledHDDappsIcon = styled(HDDappsIcon)`
   font-size: 4rem;
@@ -21,12 +21,12 @@ export default function HDDappsHODL() {
               "https://hddcoin.org/hodl", "_blank");
         }
   
-  function hddAppsOpenHODLTerminal() {
-    history.push('/dashboard/hodlterminal/HODLterminal');
-  }
+//  function hddAppsOpenHODLTerminal() {
+//    history.push('/dashboard/hodlterminal/HODLterminal');
+//  }
 
   function hddAppsOpenHODLWallet() {
-    history.push('/dashboard/HDDappsHODL/wallet/HDDappsHODLWallet');
+    history.push('/dashboard/hodlwallet');
   }
   
   return (
@@ -58,6 +58,7 @@ export default function HDDappsHODL() {
             >
               <Trans>Open HODL Wallet</Trans>
             </Button>
+  {/*
             <Button
               onClick={hddAppsOpenHODLTerminal}
               variant="contained"
@@ -66,7 +67,7 @@ export default function HDDappsHODL() {
             >
               <Trans>Open HODL Terminal</Trans>
             </Button>
-			
+  */}
             <Button
               onClick={hddAppsLearnMore}
               variant="outlined"

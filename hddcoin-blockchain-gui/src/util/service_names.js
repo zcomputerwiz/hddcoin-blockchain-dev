@@ -5,6 +5,7 @@ export const service_harvester = 'hddcoin_harvester';
 export const service_simulator = 'hddcoin_full_node_simulator';
 export const service_daemon = 'daemon';
 export const service_plotter = 'hddcoin_plotter';
+export const service_hodl = 'hddcoin_hodl';
 
 // Corresponds with outbound_message.py NodeTypes
 export const service_connection_types = {
@@ -15,4 +16,5 @@ export const service_connection_types = {
   5: 'Introducer',
   6: 'Wallet',
   7: 'Plotter',
+  8: 'Hodl',
 };

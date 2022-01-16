@@ -15,7 +15,8 @@ import FullNode from '../fullNode/FullNode';
 import Plot from '../plot/Plot';
 import Farm from '../farm/Farm';
 import Pool from '../pool/Pool';
-import HODLterminal from '../hodlterminal/HODLterminal';
+//import HODLterminal from '../hodlterminal/HODLterminal';
+import HODLWallet from '../hddapps/HDDappsHODLWallet';
 import HDDapps from '../hddapps/HDDapps';
 import Block from '../block/Block';
 import Settings from '../settings/Settings';
@@ -102,9 +103,14 @@ export default function Dashboard() {
           <Route path={`${path}/pool`}>
             <Pool />
           </Route>
+  {/*
           <Route path={`${path}/hodlterminal`}>
             <HODLterminal />
           </Route>	  
+  */}
+          <Route path={`${path}/hodlwallet`}>
+            <HODLWallet />
+          </Route>
           <Route path={`${path}/hddapps`}>
             <HDDapps />
           </Route>	  

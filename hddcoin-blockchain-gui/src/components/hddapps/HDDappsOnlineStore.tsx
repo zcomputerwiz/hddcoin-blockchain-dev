@@ -6,7 +6,7 @@ import { Flex } from '@hddcoin/core';
 import { Button, Grid, Typography, Link } from '@material-ui/core';
 import { CardHero } from '@hddcoin/core';
 import { HDDapps as HDDappsIcon } from '@hddcoin/icons';
-import HODLterminal from '../hodlterminal/HODLterminal';
+//import HODLterminal from '../hodlterminal/HODLterminal';
 
 const StyledHDDappsIcon = styled(HDDappsIcon)`
   font-size: 4rem;

@@ -4,7 +4,7 @@ export { default as Home } from './Home';
 export { default as Keys } from './Keys';
 export { default as Plot } from './Plot';
 export { default as Pool } from './Pool';
-export { default as HODLterminal } from './HODLterminal';
+//export { default as HODLterminal } from './HODLterminal';
 export { default as HDDapps } from './HDDapps';
 export { default as PlotHero } from './PlotHero';
 export { default as Settings } from './Settings';

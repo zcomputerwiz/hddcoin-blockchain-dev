@@ -30,7 +30,7 @@ import {
 } from '@material-ui/icons';
 import {
   get_address,
-  send_transaction,
+  send_hodl_transaction,
   farm_block,
 } from '../../../../modules/message';
 import { hddcoin_to_byte } from '../../../../util/hddcoin';
@@ -42,6 +42,7 @@ import { deleteUnconfirmedTransactions } from '../../../../modules/incoming';
 import HODLWalletCards from './WalletCards';
 import WalletStatus from '../../../wallet/WalletStatus';
 import useOpenDialog from '../../../../hooks/useOpenDialog';
+import ChooseProgram from '../WalletChooseProgram';
 
 const drawerWidth = 240;
 
@@ -203,6 +204,7 @@ const useStyles = makeStyles((theme) => ({
 
 type CommitCardProps = {
   wallet_id: number;
+  selectedProgramName: string;
 };
 
 type SendTransactionData = {
@@ -212,7 +214,7 @@ type SendTransactionData = {
 };
 
 function CommitCard(props: CommitCardProps) {
-  const { wallet_id } = props;
+  const { wallet_id, selectedProgramName } = props;
   const classes = useStyles();
   const dispatch = useDispatch();
   const openDialog = useOpenDialog();
@@ -315,14 +317,14 @@ function CommitCard(props: CommitCardProps) {
     const amountValue = Number.parseFloat(hddcoin_to_byte(amount));
     const feeValue = Number.parseFloat(hddcoin_to_byte(fee));
 
-    dispatch(send_transaction(wallet_id, amountValue, feeValue, address));
+    dispatch(send_hodl_transaction(selectedProgramName, wallet_id, amountValue, feeValue, address, false));
 
     methods.reset();
   }
 
   return (
     <Card
-      title={<Trans>Create Transaction</Trans>}
+      title={<Trans>Create HODL Transaction</Trans>}
       tooltip={
         <Trans>
           On average there is one minute between each transaction block. Unless
@@ -461,6 +463,18 @@ export default function StandardHODLWallet(props: StandardWalletProps) {
   const dispatch = useDispatch();
   const openDialog = useOpenDialog();
 
+  function handleOnProgramChange(selectedProgramName: string) {
+    const programName = selectedProgramName;
+    reset(programName);
+  }
+
+  const methods = useForm<FormData>({
+    shouldUnregister: false
+  });
+
+  const { watch, reset } = methods;
+  const programName = watch('programName') as string;
+
   async function handleDeleteUnconfirmedTransactions() {
     const deleteConfirmed = await openDialog(
       <ConfirmDialog
@@ -520,7 +534,8 @@ export default function StandardHODLWallet(props: StandardWalletProps) {
 
       <Flex flexDirection="column" gap={3}>
         <HODLWalletCards wallet_id={wallet_id} />
-        <CommitCard wallet_id={wallet_id} />
+        <CommitCard wallet_id={wallet_id} selectedProgramName={programName} />
+        <ChooseProgram wallet_id={wallet_id} onChange={handleOnProgramChange} />
         <WalletHistory walletId={wallet_id} />
       </Flex>
     </Flex>
