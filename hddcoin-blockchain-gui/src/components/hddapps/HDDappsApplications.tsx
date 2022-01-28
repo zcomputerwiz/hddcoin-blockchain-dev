@@ -5,22 +5,22 @@ import { useHistory } from 'react-router-dom';
 import { Flex, Link, CardHero } from '@hddcoin/core';
 import { Button, Grid, Typography, Divider } from '@material-ui/core';
 import useOpenExternal from '../../hooks/useOpenExternal';
-import { HDDappsExchangeTradingHero as HDDappsExchangeTradingHeroIcon } from '@hddcoin/icons';
+import { HDDappsApplicationsHero as HDDappsApplicationsHeroIcon } from '@hddcoin/icons';
 
-const StyledHDDappsIcon = styled(HDDappsExchangeTradingHeroIcon)`
+const StyledHDDappsIcon = styled(HDDappsApplicationsHeroIcon)`
   font-size: 4rem;
 `;
 
-export default function HDDappsExchangeTrading() {
+export default function HDDappsApplications() {
   const history = useHistory();
   const openExternal = useOpenExternal();
 
-  function hddAppsURLbuttonClickTrade() {
-            openExternal('https://www.xt.com/trade/hdd_usdt/');
+  function hddAppsURLbuttonClickExplorer() {
+            openExternal('http://explorer.hddcoin.org/');
         }
 		
-  function hddAppsURLbuttonClickExchanges() {
-            openExternal('https://hddcoin.org/exchanges/');
+  function hddAppsURLbuttonClickRoadmap() {
+            openExternal('https://hddcoin.org/roadmap/');
         }
 
   return (
@@ -32,7 +32,7 @@ export default function HDDappsExchangeTrading() {
 		  
 		  <Typography variant="h5">
 		    <Trans>
-			  HDDcoin Exchange Trading
+			  HDDcoin Explorer & Roadmap
 			</Trans>
           </Typography>
 		  
@@ -40,10 +40,10 @@ export default function HDDappsExchangeTrading() {
 		  
           <Typography variant="body1">
             <Trans>              
-			{'The HDD/USDT cryptocurrency pair is currently trading on XT.com, a top-20 Exchange with great reputation, trading volumes, and customer support. XT.com has over 2 million registered users, 200,000 active users monthly, and 7 million users in its ecosystem. '}
+			{'The HDDcoin Blockchain Explorer displays all blocks and provides top coin holders, pre-farm tracking and more insights. HDDcoin is working on other applications, games and services that will run on the blockchain. Review our Road Map for more details. '}
 			  <Link
                 target="_blank"
-                href="https://hddcoin.org/exchanges/"
+                href="https://hddcoin.org/roadmap/"
               >
                 Learn more
 			 </Link>
@@ -52,21 +52,21 @@ export default function HDDappsExchangeTrading() {
 		  	
 		  <Flex gap={1}>
             <Button
-              onClick={hddAppsURLbuttonClickTrade}
+              onClick={hddAppsURLbuttonClickExplorer}
               variant="contained"
               color="primary"
               fullWidth
             >
-              <Trans>Trade HDD Now</Trans>
+              <Trans>Open Explorer</Trans>
             </Button>
 			
             <Button
-              onClick={hddAppsURLbuttonClickExchanges}
+              onClick={hddAppsURLbuttonClickRoadmap}
               variant="outlined"
               color="primary"
               fullWidth
             >
-              <Trans>Find Exchanges</Trans>
+              <Trans>View Roadmap</Trans>
             </Button>
           </Flex>	  
 		  

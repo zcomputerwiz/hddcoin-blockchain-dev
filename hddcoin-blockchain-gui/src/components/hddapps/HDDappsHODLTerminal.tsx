@@ -11,22 +11,24 @@ import path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { Trans } from '@lingui/macro';
 import ScrollToBottom from 'react-scroll-to-bottom';
+
 const electron = require('electron');
 const clipboard = electron.clipboard;
-							
+const pty = require('node-pty');	
+						
 const PY_MAC_DIST_FOLDER = '../../../app.asar.unpacked/daemon';
 const PY_WIN_DIST_FOLDER = '../../../app.asar.unpacked/daemon';
 const HODL_HELP_PATH = process.env[(process.platform === 'win32') ? 'USERPROFILE' : 'HOME'] + '/.hddcoin/mainnet/hodl/hodlhelp.txt';
 const fullPath = (existsSync((process.platform === 'win32') ? path.join(__dirname, PY_WIN_DIST_FOLDER) : path.join(__dirname, PY_MAC_DIST_FOLDER))) ? ((process.platform === 'win32') ? path.join(__dirname, PY_WIN_DIST_FOLDER) : path.join(__dirname, PY_MAC_DIST_FOLDER)) : path.join(__dirname, '../../../venv/bin');
 const ENV_HDDCOIN = ((process.platform === 'win32') ? '$env:Path += ";' : 'export PATH="$PATH:') + fullPath + '"';
 const SHELL = (process.platform === 'win32') ? 'powershell.exe' : 'bash';
-const pty = require('node-pty');
+
 
 // HODL Help / Instructions Stylying
-const StyledPaper = styled(Paper)`
+const StyledPaperContainer = styled(Paper)`
   color: #37c3fe;
-  min-width: 84%;
-  height: 35vh;
+  min-width: 90%;
+  height: 30vh;
   bottom: 0;
   font-size: 14px;
   background-color: #2b2a2a;
@@ -44,6 +46,7 @@ const StyledScrollToBottom = styled(ScrollToBottom)`
   width: 100%;
   height: 100%;
 `;
+
 
 const term = new Terminal({
   convertEol: true,
@@ -98,7 +101,7 @@ term.onKey(key => {
   }
 });
 
-export default class HODLterminal extends React.Component {
+export default class HDDappsHODLTerminal extends React.Component {
   constructor(props) {
     super(props);	
 	this.state = {
@@ -136,25 +139,28 @@ export default class HODLterminal extends React.Component {
   // Display HODL Terminal and Help / Instructions in the GUI
   render() {
     return (
-      <Flex flexDirection="column" flexGrow="1">
+	
+	<Grid container alignItems="stretch">
+	<Grid xs={12} md={12} lg={12} item>
+      <Flex flexDirection="column" flexGrow="1" alignItems="center">
 
         <DashboardTitle>
             <Trans>HDDcoin HODL and Apps Terminal</Trans>
-        </DashboardTitle>
-		
-		<Grid container alignItems="stretch">	   
-			<Flex flexDirection="column" flexGrow="1" alignItems="center">
-				<div id="xterm" style={{ height: "55vh", width: "100%" }} />					
-			</Flex>		  
-		</Grid>
-		
-		<StyledPaper>
+        </DashboardTitle>    
+
+			<div id="xterm" style={{ height: "55vh", width: "100%" }} />
+
+		<StyledPaperContainer>
 			<StyledScrollToBottom>
 				<pre>{this.state.hodlhelp}</pre>
 			</StyledScrollToBottom>
-        </StyledPaper>
+        </StyledPaperContainer>
 				
       </Flex>
+	  
+	 </Grid>
+    </Grid>
+	  
     );
   }
 }
